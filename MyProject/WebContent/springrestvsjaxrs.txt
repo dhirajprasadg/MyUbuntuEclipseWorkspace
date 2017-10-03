@@ -1,0 +1,13 @@
+
+Spring Annotation	                            	JAX-RS Annotation
+@RequestMapping(path = "/troopers"	            	@Path("/troopers")
+@RequestMapping(method = RequestMethod.POST)		@POST
+@RequestMapping(method = RequestMethod.GET)	    	@GET
+@RequestMapping(method = RequestMethod.DELETE)		@DELETE
+@ResponseBody										N/A
+@RequestBody										N/A
+@PathVariable("id")									@PathParam("id")
+@RequestParam("xyz")								@QueryParam('xyz")
+@RequestParam(value="xyz"							@FormParam(“xyz”)
+@RequestMapping(produces = {"application/json"})	@Produces("application/json")
+@RequestMapping(consumes = {"application/json"})	@Consumes("application/json")

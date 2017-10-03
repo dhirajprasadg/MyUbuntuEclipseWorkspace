@@ -1,0 +1,155 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+       http://www.springframework.org/schema/aop 
+       http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+       http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+    http://www.springframework.org/schema/context 
+    http://www.springframework.org/schema/context/spring-context-4.0.xsd
+http://www.springframework.org/schema/mvc
+ http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
+	<!-- <bean class="org.springframework.web.servlet.mvc.support.ControllerClassNameHandlerMapping" 
+		/> -->
+	<context:annotation-config />
+	<!-- we can use annotations -->
+	<mvc:annotation-driven />
+	<!-- <mvc:annotation-driven> <mvc:message-converters> <bean class="org.springframework.http.converter.StringHttpMessageConverter"/> 
+		<bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/> 
+		</mvc:message-converters> </mvc:annotation-driven> -->
+	<!-- package to look for annotated classes -->
+	<context:component-scan base-package="myshopingcart.controller,org.timesheet" />
+
+	<!--properties file location -->
+	<context:property-placeholder location="classpath:dbconfig.properties" />
+	<!-- Most controllers will use the ControllerClassNameHandlerMapping above, 
+		but for the index controller we are using ParameterizableViewController, 
+		so we must define an explicit mapping for it. -->
+
+
+	<bean id="liveDataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url">
+			<value>${db.url}</value>
+		</property>
+		<property name="username">
+			<value>${db.username}</value>
+		</property>
+		<property name="password">
+			<value>${db.password}</value>
+		</property>
+	</bean>
+	<bean id="mySessionFactory"
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource" ref="liveDataSource" />
+
+		<property name="mappingResources">
+			<list>
+				<value>myshopingcart/mapping/Login.hbm.xml</value>
+
+			</list>
+
+		</property>
+		<property name="annotatedClasses">
+			<list>
+				<value>myshopingcart.entity.Product</value>
+				<value>org.timesheet.domain.Employee</value>
+				<value>org.timesheet.domain.Manager</value>
+				<value>org.timesheet.domain.Task</value>
+				<value>org.timesheet.domain.Timesheet</value>
+
+			</list>
+		</property>
+
+		<property name="hibernateProperties">
+
+			<ref bean="exampleHibernateProperties" />
+
+		</property>
+		<!-- <property name="javax.persistence.validation.mode" value="none"/> -->
+	</bean>
+	<bean id="exampleHibernateProperties"
+		class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="properties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.hbm2ddl.auto"> update </prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="urlMapping"
+		class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+		<property name="mappings">
+			<props>
+				<prop key="indextes.jsp">indexController</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="viewResolver"
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+		p:prefix="/WEB-INF/jsp/" p:suffix=".jsp" />
+
+	<bean id="vewres"
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="viewClass"
+			value="org.springframework.web.servlet.view.JstlView" />
+		<property name="prefix" value="/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+
+	<!-- The index controller. -->
+	<bean name="indexController"
+		class="org.springframework.web.servlet.mvc.ParameterizableViewController"
+		p:viewName="index" />
+
+	<!-- we will manage transactions with annotations -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<property name="sessionFactory">
+			<ref bean="mySessionFactory" />
+		</property>
+	</bean>
+	<bean class="myshopingcart.dao.HibernateUtility">
+		<property name="sesf">
+			<ref bean="mySessionFactory" />
+		</property>
+	</bean>
+
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+
+		<!-- one of the properties available; the maximum file size in bytes -->
+		<property name="maxUploadSize" value="9900000" />
+	</bean>
+<bean id="jdbcTemplate"
+        class="org.springframework.jdbc.core.JdbcTemplate">
+    <constructor-arg type="javax.sql.DataSource" ref="liveDataSource"/>
+</bean>
+
+	<bean id="LoginDAO" class="myshopingcart.dao.impl.LoginDAOImpl" />
+
+
+	<bean id="Associate" class="myshopingcart.beans.Associate" />
+
+	<bean id="ProductDAO" class="myshopingcart.dao.impl.ProductDAOImpl" />
+
+	<bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+		<property name="exceptionMappings">
+			<props>
+				<prop key="java.lang.Exception">Error</prop>
+			</props>
+		</property>
+	</bean>
+
+</beans>
